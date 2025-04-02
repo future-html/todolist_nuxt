@@ -113,6 +113,57 @@ export const useBoardStore = defineStore("board", {
 			this.tasks = data.tasks;
 		},
 
+		// // ~/stores/board.ts (additional methods)
+		// addTask(columnId: string, taskData: Omit<Task, "taskId" | "columnId">) {
+		// 	const storage = useStorage();
+		// 	const data = storage.getData();
+
+		// 	const taskId = `task-${Date.now()}`;
+		// 	const newTask: Task = {
+		// 		taskId,
+		// 		columnId,
+		// 		...taskData,
+		// 	};
+
+		// 	data.tasks.push(newTask);
+		// 	storage.saveData(data);
+		// 	this.tasks = data.tasks;
+
+		// 	return newTask;
+		// },
+
+		updateTask(taskId: string, updates: Partial<Task>) {
+			const storage = useStorage();
+			const data = storage.getData();
+
+			const taskIndex = data.tasks.findIndex((t) => t.taskId === taskId);
+			if (taskIndex === -1) throw new Error("Task not found");
+
+			// Preserve existing values if not provided in updates
+			const updatedTask = {
+				...data.tasks[taskIndex],
+				...updates,
+			};
+
+			data.tasks[taskIndex] = updatedTask;
+			storage.saveData(data);
+			this.tasks = data.tasks;
+
+			return updatedTask;
+		},
+
+		deleteTask(taskId: string) {
+			const storage = useStorage();
+			const data = storage.getData();
+
+			const taskIndex = data.tasks.findIndex((t) => t.taskId === taskId);
+			if (taskIndex === -1) throw new Error("Task not found");
+
+			data.tasks.splice(taskIndex, 1);
+			storage.saveData(data);
+			this.tasks = data.tasks;
+		},
+
 		inviteUser(boardId: string, userId: string) {
 			const storage = useStorage();
 			const data = storage.getData();
@@ -122,7 +173,7 @@ export const useBoardStore = defineStore("board", {
 
 			// Only owner can invite
 			const authStore = useAuthStore();
-			console.log(board.owner, "owner");
+			// console.loglog(board.owner, "owner");
 			if (board.owner !== ((authStore.currentUser?.userId && authStore.currentUser) || storage.getAuth().userId)) {
 				throw new Error("Only board owner can invite users");
 			}
@@ -140,14 +191,13 @@ export const useBoardStore = defineStore("board", {
 
 			const board = data.boards.find((b) => b.boardId === boardId);
 
-			console.log(board, "board in board.ts");
+			// console.loglog(board, "board in board.ts");
 			if (!board) throw new Error("Board not found");
 
 			// Only owner can invite members
 			const authStore = useAuthStore();
-			console.log(
-				board.owner !== ((authStore.currentUser?.userId && authStore.currentUser) || storage.getAuth().userId)
-			);
+			// console.loglog(
+
 			if (board.owner !== ((authStore.currentUser?.userId && authStore.currentUser) || storage.getAuth().userId)) {
 				throw new Error("Only board owner can invite members");
 			}
@@ -204,6 +254,7 @@ export const useBoardStore = defineStore("board", {
 			const data = storage.getData();
 
 			const taskId = `task-${Date.now()}`;
+
 			const newTask: Task = {
 				taskId,
 				columnId,

@@ -21,12 +21,14 @@ export interface Column {
 	columnName: string;
 }
 
+// ~/types/index.ts
 export interface Task {
-	taskId: string; // format: task-1, task-2, etc.
-	columnId: string; // reference to column
+	taskId: string;
+	columnId: string;
 	taskName: string;
+	description?: string;
 	priority: "low" | "medium" | "high";
 	status: "todo" | "In progress" | "completed";
-	dueDate: string; // format: dd-mm-yy
+	dueDate?: string;
 	assignee: string[]; // array of userIds
 }

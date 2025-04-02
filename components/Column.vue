@@ -3,6 +3,7 @@
 		class="column bg-gray-100 dark:bg-gray-800 rounded-lg p-4 w-72 flex flex-col"
 		:data-column-id="column.columnId"
 	>
+		{{ column.columnId }}
 		<!-- Column Header -->
 		<div class="flex items-center justify-between mb-4">
 			<h3
@@ -85,31 +86,33 @@
 		</div>
 
 		<!-- Tasks List -->
-		<div class="flex-1 overflow-y-auto">
-			<div
-				v-for="task in tasks"
-				:key="task.taskId"
-				class="task mb-3 bg-white dark:bg-gray-700 rounded p-3 shadow hover:shadow-md transition-shadow cursor-pointer"
-				@click="openTaskModal(task)"
+		<div
+			class="flex-1 overflow-y-auto"
+			v-if="tasks.length > 0"
+		>
+			<draggable
+				v-model="tasks"
+				group="tasks"
+				item-key="taskId"
+				@end="onTaskDragEnd"
 			>
-				<h4 class="font-medium text-gray-800 dark:text-white">{{ task.taskName }}</h4>
-				<div class="flex items-center mt-2">
-					<span
-						class="text-xs px-2 py-1 rounded"
-						:class="'priorityClasses[task.priority]'"
-					>
-						{{ task.priority }}
-					</span>
-					<span class="text-xs text-gray-500 ml-2">
-						{{ formatDate(task.dueDate) }}
-					</span>
-				</div>
-			</div>
-		</div>
+				<template #item="{ element: task }">
+					<TaskElement
+						:task="task"
+						:board-owner-id="boardOwnerId"
+						:board-id="column.boardId"
+						@task-deleted="refreshData"
+					/>
 
+					<!-- @task-selected="openTaskModal" -->
+				</template>
+			</draggable>
+		</div>
+		<div v-else>
+			<p>Error somethingz</p>
+		</div>
 		<!-- Add Task Button -->
 		<button
-			v-if="isOwner || isMember"
 			class="mt-3 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center justify-center"
 			@click="openAddTaskModal"
 		>
@@ -128,13 +131,24 @@
 			Add Task
 		</button>
 	</div>
+	<div v-if="showAddTaskModal">
+		<TaskModal
+			:columnId="column.columnId"
+			v-model:showAddTaskModal="showAddTaskModal"
+			v-model:isNewTask="isNewTask"
+		/>
+	</div>
 </template>
 
 <script setup lang="ts">
+import draggable from "vuedraggable";
+import TaskElement from "./TaskElement.vue";
 import { useAuthStore } from "~/store/auth";
 import { useBoardStore } from "~/store/board";
 import { useStorage } from "~/services/storage";
 import type { Column, Task } from "~/types";
+import TaskModal from "./TaskModal.vue";
+console.log(TaskElement);
 
 const props = defineProps({
 	column: {
@@ -147,10 +161,17 @@ const props = defineProps({
 	},
 });
 
+const showAddTaskModal = ref(false);
+const isNewTask = ref(true); // compoted for isNewTask by click add task or not
+// and what is id to find
+
+console.log(props.boardOwnerId);
+
 const emit = defineEmits(["column-updated", "column-deleted", "task-selected", "add-task"]);
 
 const authStore = useAuthStore();
 const boardStore = useBoardStore();
+const board = boardStore.boards.find((b) => b.boardId === props.column.boardId);
 const data = useStorage() as any;
 
 // Reactive state
@@ -159,20 +180,16 @@ const editedName = ref(props.column.columnName);
 const nameInput = ref<HTMLInputElement | null>(null);
 
 // Computed properties
-const tasks = computed(() => {
-	return boardStore.getColumnTasks(props.column.columnId);
-});
 
-const isOwner = computed(() => {
-	return ((authStore.currentUser && authStore.currentUser?.userId) || data.getAuth().userId) === props.boardOwnerId;
-});
+const isOwner = true; // computed(() => authStore.currentUser?.userId === props.boardOwnerId);
 
 console.log(isOwner);
 
 const isMember = computed(() => {
-	const board = boardStore.boards.find((b) => b.boardId === props.column.boardId);
 	return board?.people.includes(authStore.currentUser?.userId || "") || false;
 });
+
+console.log(board && board.boardId, "boardId");
 
 const priorityClasses = {
 	low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
@@ -182,7 +199,6 @@ const priorityClasses = {
 
 // Methods
 const enableEdit = () => {
-	if (!isOwner.value) return;
 	isEditing.value = true;
 	editedName.value = props.column.columnName;
 	nextTick(() => {
@@ -191,8 +207,6 @@ const enableEdit = () => {
 };
 
 const saveEdit = async () => {
-	if (!isOwner.value) return;
-
 	try {
 		await boardStore.updateColumn(props.column.columnId, editedName.value);
 		emit("column-updated");
@@ -208,8 +222,6 @@ const cancelEdit = () => {
 };
 
 const deleteColumn = async () => {
-	if (!isOwner.value) return;
-
 	if (confirm("Are you sure you want to delete this column? All tasks will be deleted.")) {
 		try {
 			await boardStore.deleteColumn(props.column.columnId);
@@ -220,18 +232,58 @@ const deleteColumn = async () => {
 	}
 };
 
-const openTaskModal = (task: Task) => {
-	emit("task-selected", task);
-};
+// const openTaskModal = (task: Task) => {
+// 	emit("task-selected", task);
+// };
 
 const openAddTaskModal = () => {
-	emit("add-task", props.column.columnId);
+	showAddTaskModal.value = true;
 };
 
 const formatDate = (dateString: string) => {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const tasks = computed({
+	get(): Task[] {
+		return boardStore.getColumnTasks(props.column.columnId);
+	},
+	set(value: Task[]) {
+		// This will be called when drag and drop reorders tasks
+		// We need to update the order in the store
+		updateTaskOrder(value);
+	},
+});
+
+console.log(tasks.value, "tasks");
+
+const onTaskDragEnd = (event: any) => {
+	if (event.to !== event.from) {
+		// Task moved between columns
+		const taskId = event.item.dataset.id;
+		const newColumnId = event.to.dataset.columnId;
+		boardStore.moveTask(taskId, newColumnId, event.newIndex);
+	}
+};
+
+const updateTaskOrder = (newTasks: Task[]) => {
+	// Update the order of tasks in the same column
+	const storage = useStorage();
+	const data = storage.getData();
+
+	// Remove all tasks from this column
+	data.tasks = data.tasks.filter((t) => t.columnId !== props.column.columnId);
+
+	// Add them back in the new order
+	data.tasks.push(...newTasks);
+
+	storage.saveData(data);
+	boardStore.tasks = data.tasks;
+};
+const refreshData = () => {
+	boardStore.loadInitialData();
 };
 </script>
 

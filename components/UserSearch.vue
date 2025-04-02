@@ -18,15 +18,14 @@
 				@click="selectUser(user)"
 			>
 				<span>{{ user.name }} ({{ user.email }})</span>
-				<button
+				<!-- <button
 					v-if="isSelected(user.userId)"
 					@click.stop="removeUser(user.userId)"
 					class="text-red-500 hover:text-red-700"
 				>
 					Remove
-				</button>
+				</button> -->
 				<button
-					v-else
 					@click.stop="selectUser(user)"
 					class="text-blue-500 hover:text-blue-700"
 				>

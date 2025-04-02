@@ -57,6 +57,7 @@ const board = computed(() => {
 	return boardStore.boards.find((b) => b.boardId === props.boardId);
 });
 
+
 const handleMembersUpdate = (members: string[]) => {
 	selectedMembers.value = members;
 };
@@ -65,6 +66,8 @@ const inviteMembers = async () => {
 	if (!selectedMembers.value.length) return;
 
 	try {
+
+// console.loglog(board, 'baird')
 		isInviting.value = true;
 		await boardStore.inviteMembers(props.boardId, selectedMembers.value);
 		emit("invited");
