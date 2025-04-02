@@ -20,6 +20,8 @@
     "vue-router": "latest"
   },
   "devDependencies": {
+    "@types/node": "^22.13.15",
+    "@vueuse/core": "^13.0.0",
     "axios": "^1.7.9"
   }
 }

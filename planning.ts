@@ -11,3 +11,5 @@
 // 5. integrate with frontend
 // authentication, board UI with figma
 // 6. deploy to production p
+
+// {"users":[{"userId":"user-1","name":"","email":"isiisisiis@eoxo.com","password":""},{"userId":"user-2","name":"","email":"aooaoappap@exomple.com","password":""},{"userId":"user-3","name":"dkkdkkd","email":"pdppdpdp@eooe.com","password":"pdpdppd"},{"userId":"user-4","name":"asppospps","email":"s33s3s@xl.com","password":"pdpdppd"}],"boards":[{"boardId":"board-4","boardName":"skisiisfutureaps[a[a","people":[],"owner":"user-4"},{"boardId":"board-5","boardName":"future","people":[],"owner":"user-3"},{"boardId":"board-6","boardName":"ssppspps","people":[],"owner":"user-4"},{"boardId":"board-7","boardName":"spspppsps","people":[],"owner":"user-4"},{"boardId":"board-1743496676419","boardName":"ss[s[s[","people":[],"owner":"user-4"},{"boardId":"board-1743496986313","boardName":"pspspps","people":[],"owner":"user-4"}],"columns":[],"tasks":[]}
