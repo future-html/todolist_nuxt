@@ -1,6 +1,6 @@
 <template>
 	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-		<!-- <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+		<div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
 			<div class="flex justify-between items-center mb-4">
 				<h2 class="text-xl font-bold">{{ isNewTask ? "Create Task" : "Edit Task" }}</h2>
 				<button
@@ -23,7 +23,7 @@
 					</svg>
 				</button>
 			</div>
-			
+
 			<form @submit.prevent="submitForm">
 				<div class="space-y-4">
 					<div>
@@ -125,7 +125,7 @@
 					</button>
 				</div>
 			</form>
-		</div> -->
+		</div>
 		<div class="text-white">Open Already modal</div>
 	</div>
 </template>

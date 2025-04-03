@@ -50,12 +50,12 @@
 				class="flex items-center justify-between p-1"
 			>
 				<span>{{ getUserById(userId)?.name || "Unknown user" }}</span>
-				<button
+				<!-- <button
 					@click="removeUser(userId)"
 					class="text-red-500 hover:text-red-700 text-sm"
 				>
 					Remove
-				</button>
+				</button> -->
 			</div>
 		</div>
 	</div>

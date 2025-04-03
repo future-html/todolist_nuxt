@@ -50,7 +50,7 @@
 			</div>
 		</div>
 		<div class="flex space-x-4 overflow-x-auto pb-4">
-			<!-- <Column
+			<Column
 				v-for="column in columns"
 				:key="column.columnId"
 				:column="column"
@@ -59,7 +59,7 @@
 				@column-deleted="refreshBoard"
 				@task-selected="openTaskModal"
 				@add-task="openAddTaskModal"
-			/> This is problem -->
+			/>
 		</div>
 
 		<div
@@ -92,6 +92,14 @@
 			</div>
 		</div>
 
+		<TaskModal
+			v-if="selectedTask"
+			:task="selectedTask"
+			:board-id="boardId"
+			@close="selectedTask = null"
+			@task-updated="refreshBoard"
+		/>
+
 		<!-- Rest of your board content -->
 
 		<BoardInviteModal
@@ -111,8 +119,6 @@ onMounted(() => {
 	boardStore.loadInitialData();
 });
 
-import TaskModal from "~/components/TaskModal.vue";
-import Column from "~/components/Column.vue";
 import type { Task } from "~/types";
 import { useBoardStore } from "~/store/board";
 import { useAuthStore } from "~/store/auth";
@@ -128,10 +134,7 @@ const showAddColumn = ref(false);
 const newColumnName = ref("");
 const selectedTask = ref<Task | null>(null);
 
-const showTaskModal = ref(false);
-const selectedColumnId = ref("");
-
-// console.loglog(boardId);
+console.log(boardId);
 const showInviteModal = ref(false);
 
 const board = computed(() => {
@@ -142,14 +145,14 @@ const columns = computed(() => {
 	return boardStore.getBoardColumns(boardId);
 });
 
-// console.loglog(board);
+console.log(board);
 const isOwner = computed(() => {
 	return (
 		board.value?.owner === ((authStore.currentUser && authStore.currentUser?.userId) || useStorage().getAuth().userId)
 	);
 });
 
-// console.loglog(BoardInviteModal);
+console.log(BoardInviteModal);
 
 const addColumn = () => {
 	if (!newColumnName.value.trim()) return;
@@ -165,22 +168,12 @@ const addColumn = () => {
 };
 
 const openAddTaskModal = (columnId: string) => {
-	selectedTask.value = null;
-	selectedColumnId.value = columnId;
-	showTaskModal.value = true;
+	// Implementation depends on your task creation flow
+	console.log("Add task to column:", columnId);
 };
 
 const openTaskModal = (task: Task) => {
 	selectedTask.value = task;
-	showTaskModal.value = true;
-};
-
-// const handleTaskCreated = (task: Task) => {
-// 	refreshBoard();
-// 	closeTaskModal();
-// };
-const closeTaskModal = () => {
-	showTaskModal.value = false;
 };
 
 const ownerName = computed(() => {
