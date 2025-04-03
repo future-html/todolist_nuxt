@@ -1,12 +1,12 @@
 <template>
+	<!-- Backdrop -->
 	<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-		<div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-			<div class="flex justify-between items-center mb-4">
-				<h2 class="text-xl font-bold">{{ isNewTask ? "Create Task" : "Edit Task" }}</h2>
-				<button
-					@click="toggleOpenFormModal"
-					class="text-gray-500 hover:text-gray-700"
-				>
+		<!-- Modal Container -->
+		<div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md border border-sea-blue-500">
+			<!-- Modal Header -->
+			<div class="flex justify-between items-center p-4 border-b border-sea-blue-700">
+				<h2 class="text-xl font-bold text-white">Create New Task</h2>
+				<button class="text-sea-blue-300 hover:text-white">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="h-6 w-6"
@@ -24,257 +24,158 @@
 				</button>
 			</div>
 
-			<form @submit.prevent="submitForm">
-				<div class="space-y-4">
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Name</label>
-						<input
-							v-model="form.taskName"
-							type="text"
-							required
-							class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-						/>
-					</div>
+			<!-- Modal Body -->
+			<div class="p-4 space-y-4">
+				<!-- Task Name -->
+				<div>
+					<label class="block text-sm font-medium text-sea-blue-200 mb-1">Task Name</label>
+					<input
+						type="text"
+						class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-sea-blue-500"
+						placeholder="Enter task name"
+					/>
+				</div>
 
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-						<textarea
-							v-model="form.description"
-							class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-							rows="3"
-						></textarea>
-					</div>
+				<!-- Description -->
+				<div>
+					<label class="block text-sm font-medium text-sea-blue-200 mb-1">Description</label>
+					<textarea
+						rows="3"
+						class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-sea-blue-500"
+						placeholder="Task description..."
+					></textarea>
+				</div>
 
-					<div class="grid grid-cols-2 gap-4">
-						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
-							<select
-								v-model="form.priority"
-								class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+				<!-- Priority & Status -->
+				<div class="grid grid-cols-2 gap-4">
+					<!-- Priority -->
+					<div>
+						<label class="block text-sm font-medium text-sea-blue-200 mb-1">Priority</label>
+						<select
+							class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-sea-blue-500"
+						>
+							<option
+								class="bg-gray-800"
+								value="low"
 							>
-								<option value="low">Low</option>
-								<option value="medium">Medium</option>
-								<option value="high">High</option>
-							</select>
-						</div>
-
-						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-							<select
-								v-model="form.status"
-								class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+								Low
+							</option>
+							<option
+								class="bg-gray-800"
+								value="medium"
 							>
-								<option value="todo">To Do</option>
-								<option value="In progress">In Progress</option>
-								<option value="completed">Completed</option>
-							</select>
-						</div>
+								Medium
+							</option>
+							<option
+								class="bg-gray-800"
+								value="high"
+							>
+								High
+							</option>
+						</select>
 					</div>
 
+					<!-- Status -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
-						<input
-							v-model="form.dueDate"
-							type="date"
-							class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-						/>
-					</div>
-
-					<div>
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assignees</label>
-						<div class="space-y-2">
-							<div
-								v-for="user in availableUsers"
-								:key="user.userId"
-								class="flex items-center"
+						<label class="block text-sm font-medium text-sea-blue-200 mb-1">Status</label>
+						<select
+							class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-sea-blue-500"
+						>
+							<option
+								class="bg-gray-800"
+								value="todo"
 							>
-								<input
-									:id="`assignee-${user.userId}`"
-									v-model="form.assignee"
-									type="checkbox"
-									:value="user.userId"
-									class="mr-2"
-								/>
-								<label :for="`assignee-${user.userId}`">{{ user.name }}</label>
-							</div>
-						</div>
+								To Do
+							</option>
+							<option
+								class="bg-gray-800"
+								value="progress"
+							>
+								In Progress
+							</option>
+							<option
+								class="bg-gray-800"
+								value="done"
+							>
+								Completed
+							</option>
+						</select>
 					</div>
 				</div>
 
-				<div class="mt-6 flex justify-end space-x-2">
-					<button
-						type="button"
-						@click="toggleOpenFormModal"
-						class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-					>
-						Cancel
-					</button>
-					<button
-						type="submit"
-						class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-					>
-						{{ isNewTask ? "Create" : "Update" }}
-					</button>
-					<button
-						v-if="!isNewTask"
-						type="button"
-						@click="deleteTask"
-						class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-					>
-						Delete
-					</button>
+				<!-- Due Date -->
+				<div>
+					<label class="block text-sm font-medium text-sea-blue-200 mb-1">Due Date</label>
+					<input
+						type="date"
+						class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-1 focus:ring-sea-blue-500"
+					/>
 				</div>
-			</form>
+
+				<!-- Assignees -->
+				<div>
+					<label class="block text-sm font-medium text-sea-blue-200 mb-1">Assign To</label>
+					<div class="space-y-2">
+						<div class="flex items-center">
+							<input
+								type="checkbox"
+								id="user1"
+								class="h-4 w-4 text-sea-blue-600 border-gray-600 rounded bg-gray-700 focus:ring-sea-blue-500"
+							/>
+							<label
+								for="user1"
+								class="ml-2 text-sm text-white"
+								>John Doe</label
+							>
+						</div>
+						<div class="flex items-center">
+							<input
+								type="checkbox"
+								id="user2"
+								class="h-4 w-4 text-sea-blue-600 border-gray-600 rounded bg-gray-700 focus:ring-sea-blue-500"
+							/>
+							<label
+								for="user2"
+								class="ml-2 text-sm text-white"
+								>Jane Smith</label
+							>
+						</div>
+						<div class="flex items-center">
+							<input
+								type="checkbox"
+								id="user3"
+								class="h-4 w-4 text-sea-blue-600 border-gray-600 rounded bg-gray-700 focus:ring-sea-blue-500"
+							/>
+							<label
+								for="user3"
+								class="ml-2 text-sm text-white"
+								>Mike Johnson</label
+							>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Modal Footer -->
+			<div class="flex justify-end p-4 border-t border-sea-blue-700 space-x-3">
+				<button
+					@click="closeModal"
+					class="px-4 py-2 text-white bg-gray-700 hover:bg-gray-600 rounded-md transition"
+				>
+					Cancel
+				</button>
+				<button class="px-4 py-2 text-white bg-sea-blue-600 hover:bg-sea-blue-500 rounded-md transition">
+					Create Task
+				</button>
+			</div>
 		</div>
-		<div class="text-white">Open Already modal</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from "vue";
-import type { Board, Task, User } from "~/types";
-import { useAuthStore } from "~/store/auth";
-import { useBoardStore } from "~/store/board";
-const availableUsers = [];
-
-const props = defineProps({
-	showAddTaskModal: Boolean,
-	isNewTask: Boolean,
-	columnId: String,
-});
-
-const emit = defineEmits(["update:showAddTaskModal", "update:isNewTask"]);
-
-const toggleOpenFormModal = () => {
-	emit("update:showAddTaskModal", !props.showAddTaskModal); // onChange in react but easier
+const props = defineProps(["showTaskModal"]);
+const emit = defineEmits(["close"]);
+const closeModal = () => {
+	emit("close");
 };
-
-// const props = defineProps({
-// 	task: {
-// 		type: Object as PropType<Task | null>,
-// 		default: null,
-// 	},
-// 	columnId: {
-// 		type: String,
-// 		default: "",
-// 	},
-// 	boardId: {
-// 		type: String,
-// 		required: true,
-// 	},
-// 	isOpen: {
-// 		type: Boolean,
-// 		required: true,
-// 	},
-// });
-
-// const emit = defineEmits(["close", "task-created", "task-updated", "task-deleted"]);
-
-const authStore = useAuthStore();
-const boardStore = useBoardStore();
-
-// Form state
-const form = reactive({
-	taskName: "",
-	description: "",
-	priority: "medium" as "low" | "medium" | "high",
-	status: "todo" as "todo" | "In progress" | "completed",
-	dueDate: "",
-	assignee: [] as string[],
-});
-
-// const isNewTask = computed(() => !props.task);
-
-// Available users for assignment (owner + board members)
-
-// const availableUsers = computed(() => {
-// 	const storage = useStorage() as any;
-// 	const data = storage.getData();
-
-// 	const board = data.boards.find((b: Board) => b.boardId === props.boardId);
-// 	if (!board) return [];
-
-// 	const owner = data.users.find((u: User) => u.userId === board.owner);
-// 	const members = board.people.map((userId: string) => data.users.find((u: User) => u.userId === userId));
-// 	return [...(owner ? [owner] : []), ...members.filter(Boolean)];
-// });
-
-// Initialize form when props change
-// watch(
-// 	() => props.task,
-// 	(task) => {
-// 		if (task) {
-// 			form.taskName = task.taskName;
-// 			form.description = task.description || "";
-// 			form.priority = task.priority;
-// 			form.status = task.status;
-// 			form.dueDate = task.dueDate || "";
-// 			form.assignee = [...task.assignee];
-// 		} else {
-// 			resetForm();
-// 		}
-// 	},
-// 	{ immediate: true }
-// );
-
-// Methods
-// const resetForm = () => {
-// 	form.taskName = "";
-// 	form.description = "";
-// 	form.priority = "medium";
-// 	form.status = "todo";
-// 	form.dueDate = "";
-// 	form.assignee = [];
-// };
-
-// const closeModal = () => {
-// 	emit("close");
-// };
-
-const submitForm = async () => {
-	try {
-		if (props.isNewTask) {
-			if (props.columnId) {
-				const newTask = boardStore.addTask(props.columnId, {
-					taskName: form.taskName,
-					description: form.description,
-					priority: form.priority,
-					status: form.status,
-					dueDate: form.dueDate,
-					assignee: form.assignee,
-				});
-			}
-
-			// emit("task-created", newTask);
-		} else {
-			const updatedTask = boardStore.updateTask(props.task!.taskId, {
-				taskName: form.taskName,
-				description: form.description,
-				priority: form.priority,
-				status: form.status,
-				dueDate: form.dueDate,
-				assignee: form.assignee,
-				// columnId: props.task!.columnId,
-			});
-			// emit("task-updated", updatedTask);
-		}
-		toggleOpenFormModal();
-	} catch (error) {
-		console.error("Failed to save task:", error);
-	}
-};
-
-// const deleteTask = async () => {
-// 	if (!props.task) return;
-
-// 	if (confirm("Are you sure you want to delete this task?")) {
-// 		try {
-// 			await boardStore.deleteTask(props.task.taskId);
-// 			emit("task-deleted", props.task.taskId);
-// 			closeModal();
-// 		} catch (error) {
-// 			console.error("Failed to delete task:", error);
-// 		}
-// 	}
-// };
 </script>

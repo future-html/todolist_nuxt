@@ -96,7 +96,7 @@
 				<div class="flex items-center mt-2">
 					<span
 						class="text-xs px-2 py-1 rounded"
-						:class="'priorityClasses[task.priority]'"
+						:class="priorityClasses[task.priority]"
 					>
 						{{ task.priority }}
 					</span>
@@ -127,15 +127,22 @@
 			</svg>
 			Add Task
 		</button>
+
+		<!-- Task Modal -->
+		<TaskModal
+			v-if="showTaskModal"
+			@close="showTaskModal = false"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, nextTick } from "vue";
 import { useAuthStore } from "~/store/auth";
 import { useBoardStore } from "~/store/board";
 import { useStorage } from "~/services/storage";
 import type { Column, Task } from "~/types";
-
+import TaskModal from "./TaskModal.vue";
 const props = defineProps({
 	column: {
 		type: Object as PropType<Column>,
@@ -147,16 +154,18 @@ const props = defineProps({
 	},
 });
 
-const emit = defineEmits(["column-updated", "column-deleted", "task-selected", "add-task"]);
+console.log(props.boardOwnerId, "boardid");
+// "task-selected"
+const emit = defineEmits(["column-updated", "column-deleted", "add-task"]);
 
 const authStore = useAuthStore();
 const boardStore = useBoardStore();
 const data = useStorage() as any;
 
-// Reactive state
-const isEditing = ref(false);
-const editedName = ref(props.column.columnName);
-const nameInput = ref<HTMLInputElement | null>(null);
+// Task Modal state
+const showTaskModal = ref(false);
+const isNewTask = ref(true);
+const currentTask = ref<Task | null>(null);
 
 // Computed properties
 const tasks = computed(() => {
@@ -166,8 +175,6 @@ const tasks = computed(() => {
 const isOwner = computed(() => {
 	return ((authStore.currentUser && authStore.currentUser?.userId) || data.getAuth().userId) === props.boardOwnerId;
 });
-
-console.log(isOwner);
 
 const isMember = computed(() => {
 	const board = boardStore.boards.find((b) => b.boardId === props.column.boardId);
@@ -180,7 +187,12 @@ const priorityClasses = {
 	high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
 };
 
-// Methods
+// Column editing state
+const isEditing = ref(false);
+const editedName = ref(props.column.columnName);
+const nameInput = ref<HTMLInputElement | null>(null);
+
+// Methods for column operations
 const enableEdit = () => {
 	if (!isOwner.value) return;
 	isEditing.value = true;
@@ -220,12 +232,25 @@ const deleteColumn = async () => {
 	}
 };
 
-const openTaskModal = (task: Task) => {
-	emit("task-selected", task);
+// Methods for task operations
+const toggleTaskModal = (value: boolean) => {
+	showTaskModal.value = value;
+	if (!value) {
+		currentTask.value = null;
+	}
 };
 
 const openAddTaskModal = () => {
-	emit("add-task", props.column.columnId);
+	isNewTask.value = true;
+	currentTask.value = null;
+	showTaskModal.value = true;
+};
+
+const openTaskModal = (task: Task) => {
+	currentTask.value = task;
+	isNewTask.value = false;
+	showTaskModal.value = true;
+	// emit("task-selected", task);
 };
 
 const formatDate = (dateString: string) => {
